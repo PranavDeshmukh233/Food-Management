@@ -1,0 +1,698 @@
+Prerequisites
+Before we start, make sure you have the following installed on your laptop or computer:
+
+ 
+
+Node.js and npm (Node Package Manager) – You can download and install them from the official website: https://nodejs.org/
+ 
+
+A code editor (e.g., Visual Studio Code, Sublime Text, Atom, etc.).
+ 
+
+Backend Setup: Setting Up RESTful APIs
+In case you are wondering what RESTful APIs are, they are programming interfaces that conform to representational state transfer (REST).
+
+To begin, we will create a simple backend using Node.js and Express to provide RESTful APIs for our frontend application. Follow the steps below to set up the backend:
+
+ 
+Step 1: Project Initialization
+Create a new folder for your project and open a terminal in that directory. Run the following command to initialize a new Node.js project:
+
+npm init -y
+
+ 
+This will generate a package.  json file in your project folder.
+
+ 
+
+Step 2: Installing Dependencies
+Next, we need to install the required dependencies. For this project, we’ll use Express as our backend framework and Cors to handle cross-origin requests. Run the following command in the terminal:
+
+ 
+
+npm install express cors
+
+ 
+Step 3: Setting Up the Server
+Create a new file named server.js in your project folder. This file will contain the server code.
+
+ 
+
+// server.js
+
+const express = require('express');
+
+const cors = require('cors');
+
+const app = express();
+
+const port = 5000;
+
+ 
+
+app.use(cors());
+
+app.use(express.json());
+
+ 
+
+// Your API routes will be defined here
+
+ 
+
+app.listen(port, () => {
+
+  console.log(`Server is running on http://localhost:${port}`);
+
+});
+
+ 
+
+Also, check out:
+
+How to Build a Full-Stack Web Application with Python and Vue.js
+
+
+
+Step 4: Defining API Routes
+Now, let’s define the API routes for our CRUD operations. For easy understanding, we’ll use an in-memory array to store our data temporarily. In a real-world scenario, you would use a database.
+
+ 
+
+// server.js (continued)
+
+let data = [
+
+  { id: 1, title: 'Task 1', description: 'This is Task 1' },
+
+  { id: 2, title: 'Task 2', description: 'This is Task 2' },
+
+];
+
+ 
+
+// GET all tasks
+
+app.get('/api/tasks', (req, res) => {
+
+  res.json(data);
+
+});
+
+ 
+
+// GET a single task
+
+app.get('/api/tasks/:id', (req, res) => {
+
+  const id = parseInt(req.params.id);
+
+  const task = data.find((item) => item.id === id);
+
+  if (task) {
+
+    res.json(task);
+
+  } else {
+
+    res.status(404).json({ message: 'Task not found' });
+
+  }
+
+});
+
+ 
+
+// POST a new task
+
+app.post('/api/tasks', (req, res) => {
+
+  const { title, description } = req.body;
+
+  const newTask = { id: data.length + 1, title, description };
+
+  data.push(newTask);
+
+  res.status(201).json(newTask);
+
+});
+
+ 
+
+// PUT (update) an existing task
+
+app.put('/api/tasks/:id', (req, res) => {
+
+  const id = parseInt(req.params.id);
+
+  const { title, description } = req.body;
+
+  const task = data.find((item) => item.id === id);
+
+  if (task) {
+
+    task.title = title || task.title;
+
+    task.description = description || task.description;
+
+    res.json(task);
+
+  } else {
+
+    res.status(404).json({ message: 'Task not found' });
+
+  }
+
+});
+
+ 
+
+// DELETE a task
+
+app.delete('/api/tasks/:id', (req, res) => {
+
+  const id = parseInt(req.params.id);
+
+  data = data.filter((item) => item.id !== id);
+
+  res.sendStatus(204);
+
+});
+
+ 
+
+Step 5: Running the Server
+To start the server, run the following command in the terminal:
+
+ 
+
+node server.js
+
+ 
+
+Your backend server is now up and running at http://localhost:5000
+
+ 
+
+Frontend Setup: Creating the React App
+Now that the backend is set up, let’s create the frontend using React to interact with our RESTful APIs.
+
+ 
+
+Step 1: Creating the React App
+Open a new terminal window and run the following command to create a new React app:
+
+npx create-react-app crud-app
+
+ 
+
+This will create a new directory called crud-app containing the basic structure of a React application.
+
+ 
+
+Step 2: Installing Axios
+We’ll use Axios to make HTTP requests to our backend. Axios is a popular JavaScript library for handling HTTP requests. Install it by running the following command:
+
+cd crud-app
+
+npm install axios
+
+ 
+
+Step 3: Implementing CRUD Operations
+Next, let’s build the components to perform CRUD operations.
+
+ 
+
+Creating the TaskList Component
+Create a new file named TaskList.js in the src folder. This component will display the list of tasks.
+
+ 
+
+// TaskList.js
+
+import React, { useState, useEffect } from 'react';
+
+import axios from 'axios';
+
+ 
+
+const TaskList = () => {
+
+  const [tasks, setTasks] = useState([]);
+
+ 
+
+  useEffect(() => {
+
+    axios.get('http://localhost:5000/api/tasks')
+
+      .then((response) => setTasks(response.data))
+
+      .catch((error) => console.error(error));
+
+  }, []);
+
+ 
+
+  return (
+
+    <div>
+
+      <h2>Task List</h2>
+
+      <ul>
+
+        {tasks.map((task) => (
+
+          <li key={task.id}>
+
+            <strong>{task.title}</strong>
+
+            <p>{task.description}</p>
+
+          </li>
+
+        ))}
+
+      </ul>
+
+    </div>
+
+  );
+
+};
+
+ 
+
+export default TaskList;
+
+ 
+
+Creating the TaskForm Component
+Create a new file named TaskForm.js in the src folder. This component will allow users to add new tasks.
+
+ 
+
+// TaskForm.js
+
+import React, { useState } from 'react';
+
+import axios from 'axios';
+
+ 
+
+const TaskForm = () => {
+
+  const [title, setTitle] = useState('');
+
+  const [description, setDescription] = useState('');
+
+ 
+
+  const handleSubmit = (e) => {
+
+    e.preventDefault();
+
+    const newTask = { title, description };
+
+    axios.post('http://localhost:5000/api/tasks', newTask)
+
+      .then((response) => {
+
+        console.log(response.data);
+
+        // Add the new task to the list
+
+      })
+
+      .catch((error) => console.error(error));
+
+  };
+
+ 
+
+  return (
+
+    <div>
+
+      <h2>Add New Task</h2>
+
+      <form onSubmit={handleSubmit}>
+
+        <div>
+
+          <label>Title:</label>
+
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+
+        </div>
+
+        <div>
+
+          <label>Description:</label>
+
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+
+        </
+
+ 
+
+        <div>
+
+          <button type="submit">Add Task</button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  );
+
+};
+
+ 
+
+export default TaskForm;
+
+ 
+
+Creating the TaskDetail Component
+Create a new file named TaskDetail.js in the src folder. This component will display the details of a single task.
+
+ 
+
+// TaskDetail.js
+
+import React, { useState, useEffect } from 'react';
+
+import axios from 'axios';
+
+ 
+
+const TaskDetail = ({ taskId }) => {
+
+  const [task, setTask] = useState(null);
+
+ 
+
+  useEffect(() => {
+
+    axios.get(`http://localhost:5000/api/tasks/${taskId}`)
+
+      .then((response) => setTask(response.data))
+
+      .catch((error) => console.error(error));
+
+  }, [taskId]);
+
+ 
+
+  if (!task) {
+
+    return <div> Loading...</div>;
+
+  }
+
+ 
+
+  return (
+
+    <div>
+
+      <h2>{task.title}</h2>
+
+      <p>{task.description}</p>
+
+    </div>
+
+  );
+
+};
+
+ 
+
+export default TaskDetail;
+
+ 
+
+Step 4: Setting Up App.js
+Now that we have our components, we need to use them in the main App.js file.
+
+ 
+
+// App.js
+
+import React from 'react';
+
+import TaskList from './TaskList';
+
+import TaskForm from './TaskForm';
+
+import TaskDetail from './TaskDetail';
+
+ 
+
+const App = () => {
+
+  return (
+
+    <div>
+
+      <TaskList />
+
+      <TaskForm />
+
+      <TaskDetail taskId={1} /> {/* You can change the taskId to display different task details */}
+
+    </div>
+
+  );
+
+};
+
+ 
+
+export default App;
+
+ 
+
+Step 5: Running the Frontend
+Finally, let’s run the frontend app. Open a terminal in the crud-app directory and run:
+
+ 
+
+npm start
+
+ 
+
+Your React app will be running at http://localhost:3000.
+
+ 
+
+Connecting the Frontend to the Backend
+To connect the frontend React app to the backend, we’ll use Axios to make HTTP requests to the RESTful APIs we defined on the backend server.
+
+ 
+
+Step 1: Import Axios in the TaskList Component
+In the TaskList.js component, we’ll use Axios to fetch the list of tasks from the backend server.
+
+ 
+
+// TaskList.js
+
+import React, { useState, useEffect } from 'react';
+
+import axios from 'axios';
+
+ 
+
+const TaskList = () => {
+
+  const [tasks, setTasks] = useState([]);
+
+ 
+
+  useEffect(() => {
+
+    axios.get('http://localhost:5000/api/tasks')
+
+      .then((response) => setTasks(response.data))
+
+      .catch((error) => console.error(error));
+
+  }, []);
+
+ 
+
+  return (
+
+    <div>
+
+      <h2>Task List</h2>
+
+      <ul>
+
+        {tasks.map((task) => (
+
+          <li key={task.id}>
+
+            <strong>{task.title}</strong>
+
+            <p>{task.description}</p>
+
+          </li>
+
+        ))}
+
+      </ul>
+
+    </div>
+
+  );
+
+};
+
+ 
+
+export default TaskList;
+
+ 
+
+Step 2: Use Axios in the TaskForm Component
+In the TaskForm.js component, we’ll use Axios to send a POST request to add a new task to the backend.
+
+ 
+
+// TaskForm.js
+
+import React, { useState } from 'react';
+
+import axios from 'axios';
+
+ 
+
+const TaskForm = () => {
+
+  const [title, setTitle] = useState('');
+
+  const [description, setDescription] = useState('');
+
+ 
+
+  const handleSubmit = (e) => {
+
+    e.preventDefault();
+
+    const newTask = { title, description };
+
+    axios.post('http://localhost:5000/api/tasks', newTask)
+
+      .then((response) => {
+
+        console.log(response.data);
+
+        // Update the task list with the new task
+
+      })
+
+      .catch((error) => console.error(error));
+
+  };
+
+ 
+
+  return (
+
+    <div>
+
+      <h2>Add New Task</h2>
+
+      <form onSubmit={handleSubmit}>
+
+        {/* ... Form fields ... */}
+
+      </form>
+
+    </div>
+
+  );
+
+};
+
+
+export default TaskForm;
+ 
+
+Step 3: Use Axios in the TaskDetail Component
+
+In the TaskDetail.js component, we’ll use Axios to fetch the details of a single task from the backend.
+ 
+
+// TaskDetail.js
+
+import React, { useState, useEffect } from 'react';
+
+import axios from 'axios';
+ 
+
+const TaskDetail = ({ taskId }) => {
+
+  const [task, setTask] = useState(null);
+ 
+
+  useEffect(() => {
+
+    axios.get(`http://localhost:5000/api/tasks/${taskId}`)
+
+      .then((response) => setTask(response.data))
+
+      .catch((error) => console.error(error));
+
+  }, [taskId]);
+ 
+
+  if (!task) {
+
+    return <div>Loading...</div>;
+
+  }
+ 
+
+  return (
+
+    <div>
+
+      <h2>{task.title}</h2>
+
+      <p>{task.description}</p>
+
+    </div>
+
+  );
+
+};
+ 
+
+export default TaskDetail;
+ 
+
+With these modifications, the frontend components will communicate with the backend server using Axios to fetch data from the server and send data to create new tasks.
+ 
+
+Testing the CRUD Operations
+Now that both the frontend and backend are up and running, you can test the CRUD operations:
+
+ 
+Create: Use the TaskForm component to add new tasks. Fill in the title and description, then click the “Add Task” button.
+
+ 
+Read: The TaskList component will automatically fetch and display all tasks from the backend.
+
+ 
+Update: To update a task, you can modify the task’s title and description in the TaskForm component and click the “Add Task” button. It will update the task with the same ID.
+ 
+
+Delete: To delete a task, you can use the DELETE HTTP request in the backend. However, in this tutorial, we didn’t implement a delete feature. You can extend the backend API by adding a DELETE route to handle task deletion.
